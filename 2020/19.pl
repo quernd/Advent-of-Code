@@ -16,13 +16,13 @@ while (my $rule = <>) {
         for my $rhs (split / \| /, $2) {
             
             if ($rhs =~ /^"(\w)"$/) {
-                $lexical_rules{$lhs}->{$1} = 1;
+                $lexical_rules{$1}->{$lhs} = 1;
             }
             elsif ($rhs =~ /^\d+$/) {
-                $unary_rules{$lhs}->{$rhs} = 1;
+                $unary_rules{$rhs}->{$lhs} = 1;
             }
-            elsif ($rhs =~ /^\d+ \d+$/) {
-                $binary_rules{$lhs}->{$rhs} = 1;
+            elsif ($rhs =~ /^(\d+) (\d+)$/) {
+                $binary_rules{$1}->{$2}->{$lhs} = 1;
             }
             else {
                 die "Parse error: $rule";
@@ -39,52 +39,52 @@ while (my $string = <>) {
     my @nonterminals;
 
     for my $i (0..$#string) {
-        for my $nonterminal (keys %lexical_rules) {
-            $nonterminals[$i]->[$i]->[$nonterminal] = 1
-                if $lexical_rules{$nonterminal}->{$string[$i]};
+        for my $nonterminal (keys %{$lexical_rules{$string[$i]}}) {
+            $nonterminals[$i]->[$i]->{$nonterminal} = 1
         }
-        #warn "$i:$i";
     }
-    #use Data::Dumper; warn Dumper \%nonterminals;    
+
+    # Simple Earley parser for binary grammars
+    # Iterate over successively longer spans, looking at each possible split
+
     for my $length (1..$#string + 1) {
         for my $start (0..$#string + 1 - $length) {
-            my $lhs1 = $start;
-            my $rhs2 = $start + $length - 1;
+            my $start = $start;
+            my $end = $start + $length - 1;
             for my $split (1..$length - 1) {
-                my $rhs1 = $start + $split - 1;
-                my $lhs2 = $start + $split;
-                for my $lhs (keys %binary_rules) {
-                    #warn "$lhs1:$rhs1 + $lhs2:$rhs2";
-                    for my $rhs (keys %{$binary_rules{$lhs}}) {
-                        next unless $binary_rules{$lhs}->{$rhs};
-                        my ($l, $r) = split / /, $rhs;
-                        $nonterminals[$lhs1]->[$rhs2]->[$lhs] = 1
-                            if $nonterminals[$lhs1]->[$rhs1]->[$l]
-                        and $nonterminals[$lhs2]->[$rhs2]->[$r];
+                my $f_end = $start + $split - 1;
+                my $s_start = $start + $split;
+                my $f_nonterminals = $nonterminals[$start]->[$f_end];
+                my $s_nonterminals = $nonterminals[$s_start]->[$end];
+                for my $first (keys %$f_nonterminals) {
+                    for my $second (keys %{$binary_rules{$first}}) {
+                        next unless $s_nonterminals->{$second};
+                        $nonterminals[$start]->[$end]->{$_} = 1
+                            for keys %{$binary_rules{$first}->{$second}};
                     }
                 }
                                        
             }
 
-            my $num = grep {defined} $nonterminals[$lhs1]->[$rhs2];
+            # Processing of unary (chain) rules if needed;
+            next unless $nonterminals[$start]->[$end];
+
+            my $num = scalar keys %{$nonterminals[$start]->[$end]};
             for (;;) {
-                for my $lhs (keys %unary_rules) {
-                    for my $rhs (keys %{$unary_rules{$lhs}}) {
-                        next unless $unary_rules{$lhs}->{$rhs};
-                        $nonterminals[$lhs1]->[$rhs2]->[$lhs] = 1
-                            if $nonterminals[$lhs1]->[$rhs2]->[$rhs];
+                for my $rhs (keys %unary_rules) {
+                    for my $lhs (keys %{$unary_rules{$rhs}}) {
+                        next unless $unary_rules{$rhs}->{$lhs};
+                        $nonterminals[$start]->[$end]->{$lhs} = 1
+                            if $nonterminals[$start]->[$end]->{$rhs};
                     }
                 }
-                my $new_num = grep {defined} $nonterminals[$lhs1]->[$rhs2];
+                my $new_num = scalar keys %{$nonterminals[$start]->[$end]};
                 last unless $new_num > $num;
                 $num = $new_num;
             }
-                                    
-            #warn "$lhs1:$rhs2 chain rules";
         }
     }
-    #warn ".";
-    $valid += $nonterminals[0]->[$#string]->[0] // 0;
+    $valid += $nonterminals[0]->[$#string]->{0} // 0;
 }
     
     
