@@ -44,7 +44,7 @@ while (my $string = <>) {
         }
     }
 
-    # Simple Earley parser for binary grammars
+    # Simple CYK parser for binary grammars
     # Iterate over successively longer spans, looking at each possible split
 
     for my $length (1..$#string + 1) {
