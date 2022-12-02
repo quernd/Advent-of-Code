@@ -7,6 +7,9 @@ let rec fold_channel f acc channel =
       In_channel.close channel;
       acc
 
+let lines_of_channel channel =
+  fold_channel (fun lines line -> line :: lines) [] channel
+
 let insert item list =
   let rec insert item = function
     | [] -> []
