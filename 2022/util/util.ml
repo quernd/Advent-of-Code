@@ -7,8 +7,17 @@ let rec fold_channel f acc channel =
       In_channel.close channel;
       acc
 
-let lines_of_channel channel =
-  fold_channel (fun lines line -> line :: lines) [] channel
+let rec seq_of_channel channel () =
+  match In_channel.input_line channel with
+  | Some line -> Seq.Cons (line, seq_of_channel channel)
+  | None ->
+      In_channel.close channel;
+      Nil
+
+(* let lines_of_channel channel =
+   fold_channel (fun lines line -> line :: lines) [] channel *)
+
+let lines_of_channel channel = List.of_seq (seq_of_channel channel)
 
 let insert item list =
   let rec insert item = function
@@ -69,3 +78,18 @@ let%expect_test "perm" =
       [4; 1; 3; 0; 2]; [4; 1; 3; 2; 0]; [0; 4; 3; 1; 2]; [4; 0; 3; 1; 2];
       [4; 3; 0; 1; 2]; [4; 3; 1; 0; 2]; [4; 3; 1; 2; 0]; [0; 4; 3; 2; 1];
       [4; 0; 3; 2; 1]; [4; 3; 0; 2; 1]; [4; 3; 2; 0; 1]; [4; 3; 2; 1; 0]] |}]
+
+let rec zip lol =
+  let heads_and_tails =
+    try Some (List.map List.hd lol, List.map List.tl lol) with _ -> None
+  in
+  match heads_and_tails with
+  | Some (heads, tails) -> heads :: zip tails
+  | None -> []
+
+let%expect_test "zip" =
+  let lol = [ [ 1; 2; 3 ]; [ 4; 5; 6 ]; [ 7; 8; 9 ] ] in
+  print_endline (show_int_list_list (zip lol));
+  [%expect {| [[1; 4; 7]; [2; 5; 8]; [3; 6; 9]] |}]
+
+let explode s = String.to_seq s |> List.of_seq
