@@ -3,12 +3,10 @@ module Stacks = Map.Make (Char)
 let stacks_of_ascii_art lines =
   let open List in
   map Util.explode lines |> Util.zip |> map rev
-  |> filter (function
-       | hd :: _ when hd >= '1' && hd <= '9' -> true
-       | _ -> false)
-  |> map (function
-       | hd :: tl -> (hd, rev tl |> filter (fun c -> c <> ' '))
-       | _ -> assert false)
+  |> filter_map (function
+       | hd :: tl when hd >= '1' && hd <= '9' ->
+           Some (hd, rev tl |> filter (fun c -> c <> ' '))
+       | _ -> None)
   |> fold_left
        (fun stacks (index, stack) -> Stacks.add index stack stacks)
        Stacks.empty
