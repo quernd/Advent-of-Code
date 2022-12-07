@@ -22,7 +22,7 @@ module Parser = struct
 
   let dir = string "dir " *> take_till is_eol *> return `Dir
   let response = file <|> dir
-  let line = command <|> response <* char '\n'
+  let line = command <|> response <* satisfy is_eol
 
   let parse input =
     parse_string ~consume:All (Angstrom.many line) input |> Result.get_ok
