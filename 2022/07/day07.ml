@@ -1,5 +1,3 @@
-open Angstrom
-
 module Path = struct
   let move_in = List.cons
   let move_out = List.tl
@@ -10,6 +8,8 @@ end
 module String_map = Map.Make (String)
 
 module Parser = struct
+  open Angstrom
+
   let is_eol = function '\n' -> true | _ -> false
   let is_digit = function '0' .. '9' -> true | _ -> false
   let ls = string "ls" *> return `Ls
