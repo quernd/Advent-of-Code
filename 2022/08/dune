@@ -1,0 +1,7 @@
+(library
+ (inline_tests
+  (deps input))
+ (name day08)
+ (libraries util)
+ (preprocess
+  (pps ppx_expect)))
