@@ -37,18 +37,18 @@ module Rope = struct
     moves
 
   let move dir rope =
-    let rec follow_head = function
-      | first :: second :: rest ->
+    let rec follow_head head = function
+      | second :: rest ->
           let second' =
-            List.fold_left Coordinate.move second (tail_moves first second)
+            List.fold_left Coordinate.move second (tail_moves head second)
           in
-          let tail, rest' = follow_head (second' :: rest) in
-          (tail, first :: rest')
-      | [ tail ] -> (tail, [ tail ])
-      | _ -> assert false
+          let tail, rest' = follow_head second' rest in
+          (tail, second' :: rest')
+      | [] -> (head, [])
     in
     let head = Coordinate.move (List.hd rope) dir in
-    follow_head (head :: List.tl rope)
+    let tail, rope' = follow_head head (List.tl rope) in
+    (tail, head :: rope')
 end
 
 module Cset = Set.Make (Coordinate)
