@@ -37,17 +37,18 @@ module Rope = struct
     moves
 
   let move dir rope =
-    let rec follow_head head = function
+    let rec follow_head acc head = function
       | second :: rest ->
           let second' =
             List.fold_left Coordinate.move second (tail_moves head second)
           in
-          let tail, rest' = follow_head second' rest in
-          (tail, second' :: rest')
-      | [] -> (head, [])
+          follow_head
+            (fun (tail, rest') -> acc (tail, second' :: rest'))
+            second' rest
+      | [] -> acc (head, [])
     in
     let head = Coordinate.move (List.hd rope) dir in
-    let tail, rope' = follow_head head (List.tl rope) in
+    let tail, rope' = follow_head Fun.id head (List.tl rope) in
     (tail, head :: rope')
 end
 
