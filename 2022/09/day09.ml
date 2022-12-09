@@ -32,27 +32,23 @@ module Rope = struct
     in
     let moves =
       let x, y = head - tail in
-      match (x, y) with
-      | -2, _ | 2, _ | _, -2 | _, 2 -> [ move_of_x x; move_of_y y ]
-      | _ -> []
+      if abs x = 2 || abs y = 2 then [ move_of_x x; move_of_y y ] else []
     in
     moves
 
   let move dir rope =
-    let head = Coordinate.move (List.hd rope) dir in
-    let rec move_tail = function
-      | head :: tail :: rest ->
-          let tail' =
-            List.fold_left
-              (fun tail move -> Coordinate.move tail move)
-              tail (tail_moves head tail)
+    let rec follow_head = function
+      | first :: second :: rest ->
+          let second' =
+            List.fold_left Coordinate.move second (tail_moves first second)
           in
-          let last, rest' = move_tail (tail' :: rest) in
-          (last, head :: rest')
-      | [ last ] -> (last, [ last ])
+          let tail, rest' = follow_head (second' :: rest) in
+          (tail, first :: rest')
+      | [ tail ] -> (tail, [ tail ])
       | _ -> assert false
     in
-    move_tail (head :: List.tl rope)
+    let head = Coordinate.move (List.hd rope) dir in
+    follow_head (head :: List.tl rope)
 end
 
 module Cmap = Map.Make (Coordinate)
