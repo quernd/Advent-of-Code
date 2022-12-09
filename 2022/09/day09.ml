@@ -14,7 +14,7 @@ module Coordinate = struct
 end
 
 module Rope = struct
-  type t = Coordinate.t list
+  type t = { head : Coordinate.t; tail : Coordinate.t list }
 
   let tail_moves head tail =
     let open Coordinate in
@@ -44,13 +44,15 @@ module Rope = struct
             second' rest
       | [] -> acc head []
     in
-    let head = Coordinate.move (List.hd rope) dir in
-    follow_head (fun tail rope' -> (tail, head :: rope')) head (List.tl rope)
+    let head = Coordinate.move rope.head dir in
+    follow_head
+      (fun last rope' -> (last, { head; tail = rope' }))
+      head rope.tail
 end
 
 module Cset = Set.Make (Coordinate)
 
-let move ?(rope = [ (0, 0); (0, 0) ]) moves =
+let move ?(rope = Rope.{ head = (0, 0); tail = [ (0, 0) ] }) moves =
   let _rope, visited =
     List.fold_left
       (fun (rope, visited) move ->
@@ -105,7 +107,7 @@ D 10
 L 25
 U 20|} |> String.split_on_char '\n'
   in
-  let rope = List.init 10 (fun _ -> (0, 0)) in
+  let rope = Rope.{ head = (0, 0); tail = List.init 9 (fun _ -> (0, 0)) } in
   print_int (parse example2 |> move ~rope);
   [%expect {| 36 |}];
   print_int (Util.(get_input () |> lines_of_channel) |> parse |> move ~rope);
