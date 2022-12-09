@@ -30,11 +30,8 @@ module Rope = struct
       | 0 -> NOOP
       | _ -> assert false
     in
-    let moves =
-      let x, y = head - tail in
-      if abs x = 2 || abs y = 2 then [ move_of_x x; move_of_y y ] else []
-    in
-    moves
+    let x, y = head - tail in
+    if abs x = 2 || abs y = 2 then [ move_of_x x; move_of_y y ] else []
 
   let move dir rope =
     let rec follow_head acc head = function
@@ -43,13 +40,12 @@ module Rope = struct
             List.fold_left Coordinate.move second (tail_moves head second)
           in
           follow_head
-            (fun (tail, rest') -> acc (tail, second' :: rest'))
+            (fun tail rest' -> acc tail (second' :: rest'))
             second' rest
-      | [] -> acc (head, [])
+      | [] -> acc head []
     in
     let head = Coordinate.move (List.hd rope) dir in
-    let tail, rope' = follow_head Fun.id head (List.tl rope) in
-    (tail, head :: rope')
+    follow_head (fun tail rope' -> (tail, head :: rope')) head (List.tl rope)
 end
 
 module Cset = Set.Make (Coordinate)
@@ -72,9 +68,8 @@ let move ?(rope = [ (0, 0); (0, 0) ]) moves =
   in
   Cset.cardinal visited
 
-let parse input =
-  List.map
-    (fun line ->
+let parse =
+  List.map (fun line ->
       Scanf.sscanf line "%c %i" (fun c i ->
           match c with
           | 'U' -> (Coordinate.U, i)
@@ -82,7 +77,6 @@ let parse input =
           | 'L' -> (L, i)
           | 'R' -> (R, i)
           | _ -> failwith (Format.sprintf "%c is not a valid direction!" c)))
-    input
 
 let%expect_test "part1" =
   let example1 =
