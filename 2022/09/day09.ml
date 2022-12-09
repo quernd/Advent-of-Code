@@ -51,7 +51,7 @@ module Rope = struct
     follow_head (head :: List.tl rope)
 end
 
-module Cmap = Map.Make (Coordinate)
+module Cset = Set.Make (Coordinate)
 
 let move ?(rope = [ (0, 0); (0, 0) ]) moves =
   let _rope, visited =
@@ -62,14 +62,14 @@ let move ?(rope = [ (0, 0); (0, 0) ]) moves =
           | _, 0 -> (rope, visited)
           | dir, distance ->
               let last, rope' = Rope.move dir rope in
-              let visited' = Cmap.add last true visited in
+              let visited' = Cset.add last visited in
               make_move rope' visited' (dir, distance - 1)
         in
         make_move rope visited move)
-      (rope, Cmap.empty |> Cmap.add (0, 0) true)
+      (rope, Cset.singleton (0, 0))
       moves
   in
-  Cmap.cardinal visited
+  Cset.cardinal visited
 
 let parse input =
   List.map
