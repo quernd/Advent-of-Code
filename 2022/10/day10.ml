@@ -33,7 +33,10 @@ let part1 instructions =
     List.fold_left
       (fun (cycle, sum) register ->
         ( cycle + 1,
-          if (cycle - 20) mod 40 = 0 then sum + (cycle * register) else sum ))
+          if (cycle - 20) mod 40 = 0 then
+            let signal_strength = cycle * register in
+            sum + signal_strength
+          else sum ))
       (1, 0) registers
   in
   sum
