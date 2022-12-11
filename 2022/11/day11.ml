@@ -113,15 +113,11 @@ let monkey_business ?(rounds = 20)
         monkeys)
       monkeys numbers
   in
-  let monkeys =
-    List.fold_left
-      (fun monkeys (number, monkey) -> Int_map.add number monkey monkeys)
-      Int_map.empty monkeys
-  in
   let rec go n monkeys =
     match n with 0 -> monkeys | n -> go (n - 1) (round monkeys)
   in
   let inspect_counts =
+    let monkeys = Int_map.of_seq (List.to_seq monkeys) in
     Int_map.bindings (go rounds monkeys)
     |> List.map (fun (_, monkey) -> monkey.Monkey.inspect_count)
   in
