@@ -65,13 +65,10 @@ module Parser = struct
     operator >>= fun operator ->
     operand >>| fun op2 -> operator op1 op2
 
-  let test = space *> string "Test: divisible by " *> number >>| int_of_string
-
-  let if_true =
-    space *> string "If true: throw to monkey " *> number >>| int_of_string
-
-  let if_false =
-    space *> string "If false: throw to monkey " *> number >>| int_of_string
+  let phrase_number phrase = space *> string phrase *> number >>| int_of_string
+  let test = phrase_number "Test: divisible by "
+  let if_true = phrase_number "If true: throw to monkey "
+  let if_false = phrase_number "If false: throw to monkey "
 
   let monkey =
     monkey_number <* end_of_line >>= fun number ->
@@ -113,12 +110,13 @@ let monkey_business ?(rounds = 20)
         monkeys)
       monkeys numbers
   in
-  let rec go n monkeys =
-    match n with 0 -> monkeys | n -> go (n - 1) (round monkeys)
+  let rec go monkeys = function
+    | 0 -> monkeys
+    | n -> go (round monkeys) (n - 1)
   in
   let inspect_counts =
     let monkeys = Int_map.of_seq (List.to_seq monkeys) in
-    Int_map.bindings (go rounds monkeys)
+    Int_map.bindings (go monkeys rounds)
     |> List.map (fun (_, monkey) -> monkey.Monkey.inspect_count)
   in
   match List.sort (fun a b -> -compare a b) inspect_counts with
