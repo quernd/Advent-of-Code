@@ -20,6 +20,8 @@ module Monkey = struct
     | Mul (a, b) -> value a * value b
     | Add (a, b) -> value a + value b
 
+  let receive item monkey = { monkey with items = item :: monkey.items }
+
   let turn ~manage_worry monkey =
     let { items; operation; test; if_true; if_false; inspect_count } = monkey in
     let inspect_count = inspect_count + List.length items in
@@ -96,16 +98,14 @@ let monkey_business ?(rounds = 20)
     let numbers = Int_map.bindings monkeys |> List.map fst in
     List.fold_left
       (fun monkeys number ->
-        let monkey = Int_map.find number monkeys in
-        let throw_to, monkey = Monkey.turn ~manage_worry monkey in
+        let throw_to, monkey =
+          Int_map.find number monkeys |> Monkey.turn ~manage_worry
+        in
         let monkeys =
           List.fold_left
             (fun monkeys (to_monkey, item) ->
               Int_map.update to_monkey
-                (function
-                  | Some monkey ->
-                      Some Monkey.{ monkey with items = item :: monkey.items }
-                  | _ -> assert false)
+                (Option.map (Monkey.receive item))
                 monkeys)
             (Int_map.add number monkey monkeys)
             throw_to
