@@ -41,7 +41,6 @@ type monkey_list = (int * Monkey.t) list [@@deriving show]
 module Parser = struct
   open Angstrom
 
-  let eol = char '\n'
   let number = take_while (function '0' .. '9' -> true | _ -> false)
   let space = take_while (( = ) ' ')
   let monkey_number = string "Monkey " *> number <* string ":" >>| int_of_string
@@ -73,19 +72,20 @@ module Parser = struct
     space *> string "If false: throw to monkey " *> number >>| int_of_string
 
   let monkey =
-    monkey_number <* eol >>= fun number ->
-    starting_items <* eol >>= fun items ->
-    operation <* eol >>= fun operation ->
-    test <* eol >>= fun test ->
-    if_true <* eol >>= fun if_true ->
-    if_false <* eol >>= fun if_false ->
+    monkey_number <* end_of_line >>= fun number ->
+    starting_items <* end_of_line >>= fun items ->
+    operation <* end_of_line >>= fun operation ->
+    test <* end_of_line >>= fun test ->
+    if_true <* end_of_line >>= fun if_true ->
+    if_false <* end_of_line >>= fun if_false ->
     return
       ( number,
         Monkey.{ items; operation; test; if_true; if_false; inspect_count = 0 }
       )
 
   let parse input =
-    parse_string ~consume:All (sep_by1 eol monkey) input |> Result.get_ok
+    parse_string ~consume:All (sep_by1 end_of_line monkey) input
+    |> Result.get_ok
 end
 
 module Int_map = Map.Make (Int)
