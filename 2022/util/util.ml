@@ -18,6 +18,7 @@ let rec seq_of_channel channel () =
    fold_channel (fun lines line -> line :: lines) [] channel *)
 
 let lines_of_channel channel = List.of_seq (seq_of_channel channel)
+let get_input_lines () = get_input () |> lines_of_channel
 
 let insert item list =
   let rec insert item = function
