@@ -8,14 +8,11 @@ end
 module Cmap = Map.Make (Coordinate)
 module Pqueue = Psq.Make (Coordinate) (Int)
 
-let shortest_paths ?(part2 = false) start_coord end_coord coord_map =
+let shortest_paths ?(part2 = false) start_coord coord_map =
   let possible_step current neighbor =
     let current_elevation = Cmap.find current coord_map in
     let neighbor_elevation = Cmap.find neighbor coord_map in
-    (current = start_coord && neighbor_elevation = 'a')
-    || (current_elevation = 'z' && neighbor = end_coord)
-    || current <> start_coord && neighbor <> end_coord
-       && Char.code neighbor_elevation - Char.code current_elevation <= 1
+    Char.code neighbor_elevation - Char.code current_elevation <= 1
   in
   let initial_distance coord elevation =
     if coord = start_coord || (part2 && elevation = 'a') then 0 else Int.max_int
@@ -60,13 +57,13 @@ let parse input =
         let _, start_coord', end_coord', coord_map' =
           String.fold_left
             (fun (x, start_coord, end_coord, coord_map) c ->
-              let start_coord =
-                match c with 'S' -> Some (x, y) | _ -> start_coord
+              let elevation, start_coord, end_coord =
+                match c with
+                | 'S' -> ('a', Some (x, y), end_coord)
+                | 'E' -> ('z', start_coord, Some (x, y))
+                | _ -> (c, start_coord, end_coord)
               in
-              let end_coord =
-                match c with 'E' -> Some (x, y) | _ -> end_coord
-              in
-              let coord_map = Cmap.add (x, y) c coord_map in
+              let coord_map = Cmap.add (x, y) elevation coord_map in
               (x + 1, start_coord, end_coord, coord_map))
             (0, start_coord, end_coord, coord_map)
             line
@@ -81,7 +78,7 @@ let parse input =
 
 let solve ?(part2 = false) input =
   let start_coord, end_coord, coord_map = parse input in
-  shortest_paths ~part2 start_coord end_coord coord_map |> Cmap.find end_coord
+  shortest_paths ~part2 start_coord coord_map |> Cmap.find end_coord
 
 let example =
   {|Sabqponm
