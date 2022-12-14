@@ -38,14 +38,14 @@ module Cave = struct
   let pour_sand ?(origin = (500, 0)) ~floor ~abyss cave =
     let rec fill cave acc =
       let rec fall = function
-        | coord when floor coord || abyss coord -> coord
+        | coord when abyss coord -> coord
         | coord -> (
             let try_step f =
               Either.fold
                 ~left:(fun (x, y) ->
-                  let x', y' = f x y in
-                  match Cmap.find_opt (x', y') cave with
-                  | None -> Either.Right (x', y')
+                  let coord' = f x y in
+                  match (Cmap.find_opt coord' cave, floor coord') with
+                  | None, false -> Either.Right coord'
                   | _ -> Left (x, y))
                 ~right:Either.right
             in
@@ -102,7 +102,7 @@ let part1 cave =
   | _ -> failwith "Abyss not found!"
 
 let part2 cave =
-  let floor = Cave.lowest_rock cave + 1 in
+  let floor = Cave.lowest_rock cave + 2 in
   match
     Cave.pour_sand ~abyss:(fun _ -> false) ~floor:(fun (_, y) -> y = floor) cave
   with
