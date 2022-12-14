@@ -19,6 +19,7 @@ let rec seq_of_channel channel () =
 
 let lines_of_channel channel = List.of_seq (seq_of_channel channel)
 let get_input_lines () = get_input () |> lines_of_channel
+let get_input_all () = get_input () |> In_channel.input_all
 
 let insert item list =
   let rec insert item = function
