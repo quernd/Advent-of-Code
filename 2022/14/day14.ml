@@ -21,7 +21,7 @@ module Cave = struct
 
   type solid_matter = Rock | Sand
 
-  let explore_cave input =
+  let explore input =
     let rec explore_line cave = function
       | start_coord :: end_coord :: tl ->
           let cave' =
@@ -75,11 +75,7 @@ module Parser = struct
   let is_digit = function '0' .. '9' -> true | _ -> false
   let integer = take_while1 is_digit >>| int_of_string
   let comma = char ','
-
-  let coordinate =
-    map3 integer comma integer ~f:(fun start_coord _ end_coord ->
-        (start_coord, end_coord))
-
+  let coordinate = map3 integer comma integer ~f:(fun x _ y -> (x, y))
   let line = sep_by (string " -> ") coordinate <* end_of_line
 
   let parse_input input =
@@ -110,17 +106,17 @@ let part2 cave =
   | _ -> failwith "Origin not reached!"
 
 let%expect_test "part1" =
-  let cave = Parser.parse_input example |> Cave.explore_cave in
+  let cave = Parser.parse_input example |> Cave.explore in
   print_int (part1 cave);
   [%expect {| 24 |}];
-  let cave = Parser.parse_input (Util.get_input_all ()) |> Cave.explore_cave in
+  let cave = Parser.parse_input (Util.get_input_all ()) |> Cave.explore in
   print_int (part1 cave);
   [%expect {| 715 |}]
 
 let%expect_test "part2" =
-  let cave = Parser.parse_input example |> Cave.explore_cave in
+  let cave = Parser.parse_input example |> Cave.explore in
   print_int (part2 cave);
   [%expect {| 93 |}];
-  let cave = Parser.parse_input (Util.get_input_all ()) |> Cave.explore_cave in
+  let cave = Parser.parse_input (Util.get_input_all ()) |> Cave.explore in
   print_int (part2 cave);
   [%expect {| 25248 |}]
