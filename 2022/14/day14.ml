@@ -106,10 +106,7 @@ let%expect_test "part1" =
   let cave = Parser.parse_input example |> Cave.explore_cave in
   print_int (part1 cave);
   [%expect {| 24 |}];
-  let cave =
-    Parser.parse_input (Util.get_input () |> In_channel.input_all)
-    |> Cave.explore_cave
-  in
+  let cave = Parser.parse_input (Util.get_input_all ()) |> Cave.explore_cave in
   print_int (part1 cave);
   [%expect {| 715 |}]
 
@@ -117,9 +114,6 @@ let%expect_test "part2" =
   let cave = Parser.parse_input example |> Cave.explore_cave in
   print_int (part2 cave);
   [%expect {| 93 |}];
-  let cave =
-    Parser.parse_input (Util.get_input () |> In_channel.input_all)
-    |> Cave.explore_cave
-  in
+  let cave = Parser.parse_input (Util.get_input_all ()) |> Cave.explore_cave in
   print_int (part2 cave);
   [%expect {| 25248 |}]
