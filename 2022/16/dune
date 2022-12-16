@@ -1,0 +1,7 @@
+(library
+ (inline_tests
+  (deps input))
+ (name day16)
+ (libraries util angstrom psq)
+ (preprocess
+  (pps ppx_expect ppx_deriving.show)))
