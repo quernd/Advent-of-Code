@@ -1,0 +1,5 @@
+(library
+ (inline_tests)
+ (name aoc2023)
+ (preprocess
+  (pps ppx_expect ppx_inline_test)))
