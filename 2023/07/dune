@@ -1,0 +1,7 @@
+(library
+ (inline_tests
+  (deps input))
+ (name day07)
+ (libraries util angstrom)
+ (preprocess
+  (pps ppx_expect ppx_deriving.show)))
